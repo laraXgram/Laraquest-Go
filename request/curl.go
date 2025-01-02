@@ -1,10 +1,11 @@
-package connection
+package request
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -31,7 +32,7 @@ func (c *Curl) setURL(method string) string {
 	return fmt.Sprintf("%s/bot%s/%s", c.ApiServer, c.Token, method)
 }
 
-func (c *Curl) Endpoint(method string, content map[string]interface{}, post bool) (map[string]interface{}, error) {
+func (c *Curl) Endpoint(method string, content map[string]interface{}, post bool, response bool) (map[string]interface{}, error) {
 	url := c.setURL(method)
 
 	var jsonData []byte
@@ -58,6 +59,18 @@ func (c *Curl) Endpoint(method string, content map[string]interface{}, post bool
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+
+	if !response {
+		go func() {
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Printf("Error during async request: %v", err)
+				return
+			}
+			defer resp.Body.Close()
+		}()
+		return nil, nil
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
