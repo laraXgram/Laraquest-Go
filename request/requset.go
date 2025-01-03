@@ -1,9 +1,76 @@
 package request
 
 import (
-	"github.com/laraXgram/Laraquest-Go/params"
 	"reflect"
+	"encoding/json"
+	"io"
+	"log"
+	"fmt"
+	"net/http"
+	"github.com/laraXgram/Laraquest-Go/updates"
+	"github.com/laraXgram/Laraquest-Go/params"
 )
+
+type Config struct {
+	Token       string 
+	API_Server  string
+	Server_IP   string
+	Server_Port int16
+}
+
+var AppConfig Config 
+var update updates.Updates
+var startCallback func(updates.Updates)
+var c *Curl
+
+func webhookHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	err = json.Unmarshal(body, &update)
+	if err != nil {
+		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
+		return
+	}
+
+	if startCallback != nil {
+		startCallback(update)
+		update = updates.Updates{}
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
+func getServerIPOrDefault(ip string) string {
+    if ip == "" {
+        return "127.0.0.1"
+    }
+    return ip
+}
+
+func getServerPortOrDefault(port int16) int16 {
+    if port == 0 {
+        return 9000
+    }
+    return port
+}
+
+func getEndpointOrDefault(endpoint string) string {
+    if endpoint == "" {
+        return "https://api.telegram.org/"
+    }
+    return endpoint
+}
 
 func structToMap(s interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
@@ -30,7 +97,20 @@ func structToMap(s interface{}) map[string]interface{} {
 	return result
 }
 
-var c *Curl = NewCurl("****", "http://127.0.0.1:8081")
+func Serve() {
+	http.HandleFunc("/", webhookHandler)
+	address := fmt.Sprintf("%s:%d", getServerIPOrDefault(AppConfig.Server_IP), getServerPortOrDefault(AppConfig.Server_Port))
+	log.Printf("Server is running on %s\n", address)
+
+	if err := http.ListenAndServe(address, nil); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+func Start(callback func(updates.Updates)) {
+	c = NewCurl(AppConfig.Token, getEndpointOrDefault(AppConfig.API_Server))
+	startCallback = callback
+}
 
 func GetUpdates(params params.GetUpdatesParams) (map[string]interface{}, error) {
 	return c.Endpoint("getUpdates", structToMap(params), false, true)
