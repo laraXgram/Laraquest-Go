@@ -1,5 +1,13 @@
 # Laraquest-Go
-#### Sending requests and receiving Telegram updates.
+Sending requests and receiving Telegram updates.
+- Bot API Version `8.2`
+
+## Other Versions
+- [Laraquest PHP](https://github.com/laraXgram/Laraquest)
+- Laraquest Python
+- Laraquest JavaScript
+- Laraquest Rust
+- Laraquest C#
 
 ---
 
