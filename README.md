@@ -21,9 +21,9 @@ go get github.com/laraXgram/Laraquest-Go
 ### Imports :
 ```go
 import (
-	"github.com/laraXgram/Laraquest-Go/request"
-	"github.com/laraXgram/Laraquest-Go/updates"
-	"github.com/laraXgram/Laraquest-Go/params"
+    "github.com/laraXgram/Laraquest-Go/request"
+    "github.com/laraXgram/Laraquest-Go/updates"
+    "github.com/laraXgram/Laraquest-Go/params"
 )
 ```
 
@@ -31,9 +31,9 @@ import (
 ```go
 request.AppConfig = request.Config{
     Token: "XXXXXX:XXXXXX",
-	API_Server: "https://api.telegram.org", // optional
-	Server_IP: "x.x.x.x", // optional
-	Server_Port: 9000, // optional
+    API_Server: "https://api.telegram.org", // optional
+    Server_IP: "x.x.x.x", // optional
+    Server_Port: 9000, // optional
 }
 ```
 
@@ -43,7 +43,7 @@ All updates sent by Telegram, similar to the Telegram structure, are available t
 
 ```go
 go request.Start(func(update updates.Updates) {
-	// Code ...
+    // Code ...
 })
 ```
 
@@ -56,8 +56,8 @@ All Telegram methods come with a struct of received parameters, and you can easi
 If the second parameter is true, the bot will wait for a response from Telegram.
 ```go
 params := params.SendMessageParams{
-	Chat_id: update.Message.Chat.Id,
-	Text: update.Message.Text,
+    Chat_id: update.Message.Chat.Id,
+    Text: update.Message.Text,
 }
 
 request.SendMessage(params, true)
@@ -88,29 +88,29 @@ You can configure the `Server_IP` and `Server_Port` as needed.
 package main
 
 import (
-	"github.com/laraXgram/Laraquest-Go/request"
-	"github.com/laraXgram/Laraquest-Go/updates"
-	"github.com/laraXgram/Laraquest-Go/params"
+    "github.com/laraXgram/Laraquest-Go/request"
+    "github.com/laraXgram/Laraquest-Go/updates"
+    "github.com/laraXgram/Laraquest-Go/params"
 )
 
 func main() {
-	request.AppConfig = request.Config{
-		Token:       "XXX:XXX",
-		Server_IP:   "https://mydomain.com/mybot"		
-	}
+    request.AppConfig = request.Config{
+        Token:       "XXX:XXX",
+        Server_IP:   "https://mydomain.com/mybot"		
+    }
 
-	go request.Start(func(update updates.Updates) {
-		if update.Message.Chat.Type == "private" {
-			params := params.SendMessageParams{
-				Chat_id: update.Message.Chat.Id,
-				Text:    "Hello, World!",
-			}
+    go request.Start(func(update updates.Updates) {
+        if update.Message.Chat.Type == "private" {
+            params := params.SendMessageParams{
+                Chat_id: update.Message.Chat.Id,
+                Text:    "Hello, World!",
+            }
 
-			request.SendMessage(params, false)
-		}
-	})
+            request.SendMessage(params, false)
+        }
+    })    
 
-	request.Serve()
+    request.Serve()
 }
 ```
 
